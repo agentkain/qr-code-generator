@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 320px;
+        }
+        .card-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 24px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        #qrcode svg {
+            width: 200px !important;
+            height: 200px !important;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-title">QR Code Generator</div>
+        <input type="text" id="url-input" placeholder="Enter your URL here">
+        <div id="qrcode"></div>
+        <button onclick="downloadQR()">Download QR Code</button>
+    </div>
+
+    <script>
+        function generateQR() {
+            const url = document.getElementById('url-input').value;
+            if (url) {
+                const qr = qrcode(0, 'L');
+                qr.addData(url);
+                qr.make();
+                document.getElementById('qrcode').innerHTML = qr.createSvgTag(8, 0);
+            } else {
+                document.getElementById('qrcode').innerHTML = '';
+            }
+        }
+
+        function downloadQR() {
+            const svgElement = document.querySelector('#qrcode svg');
+            if (svgElement) {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                const img = new Image();
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const pngFile = canvas.toDataURL("image/png");
+                    const downloadLink = document.createElement("a");
+                    downloadLink.download = "qrcode.png";
+                    downloadLink.href = pngFile;
+                    downloadLink.click();
+                };
+                img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+            }
+        }
+
+        document.getElementById('url-input').addEventListener('input', generateQR);
+    </script>
+</body>
+</html>
