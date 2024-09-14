@@ -1,116 +1,562 @@
-<!DOCTYPE html>
-<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f0f2f5;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
         }
-        .card {
+
+        .container {
+            display: flex;
+            max-width: 900px;
             background-color: white;
             border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 320px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
+
+        .settings {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            background-color: #fff;
+        }
+
         .card-title {
             font-size: 1.8em;
             font-weight: 600;
-            text-align: center;
             margin-bottom: 24px;
-            color: #333;
+            color: var(--primary-color);
         }
-        input {
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 24px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 1em;
             transition: border-color 0.3s;
-            box-sizing: border-box;
         }
-        input:focus {
+
+        input:focus, select:focus {
             outline: none;
-            border-color: #6366f1;
+            border-color: var(--primary-color);
         }
-        #qrcode {
+
+        .color-picker {
             display: flex;
-            justify-content: center;
+            align-items: center;
+        }
+
+        .color-picker input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        #qrcode {
             margin-bottom: 24px;
         }
+
         #qrcode svg {
-            width: 200px !important;
-            height: 200px !important;
+            width: 250px !important;
+            height: 250px !important;
         }
+
         button {
             width: 100%;
             padding: 12px;
-            background-color: #6366f1;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 6px;
             font-size: 1em;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-bottom: 10px;
         }
+
         button:hover {
-            background-color: #4f46e5;
+            background-color: #3a7bc8;
+        }
+
+        #download-format {
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .accordion {
+            background-color: #f1f1f1;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            margin-bottom: 10px;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ddd;
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="card-title">QR Code Generator</div>
-        <input type="text" id="url-input" placeholder="Enter your URL here">
-        <div id="qrcode"></div>
-        <button onclick="downloadQR()">Download QR Code</button>
-    </div>
+    <div class="container">
+        <div class="settings">
+            <div class="card-title">QR Code Generator</div>
+            <div class="form-group">
+                <label for="url-input">URL</label>
+                <input type="text" id="url-input" placeholder="Enter your URL here">
+            </div>
+            
+            <button class="accordion">Colors</button>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="foreground-color">Foreground Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="foreground-color" value="#000000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="background-color">Background Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="background-color" value="#ffffff">
+                    </div>
+                </div>
+            </div>
 
+            <button class="accordion">Border</button>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="border-color">Border Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="border-color" value="#000000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="border-width">Border Width (px)</label>
+                    <input type="number" id="border-width" min="0" value="0">
+                </div>
+            </div>
+
+            <button class="accordion">Shape</button>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="module-shape">QR Code Pattern</label>
+                    <select id="module-shape">
+                        <option value="square">Square (Default)</option>
+                        <option value="dot">Dot</option>
+                        <option value="rounded">Rounded Square</option>
+                        <option value="rounded-top-right">Rounded Top-Right</option>
+                        <option value="rounded-bottom-left">Rounded Bottom-Left</option>
+                        <option value="horizontal-bar">Horizontal Bar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="corner-shape">Corner Shape</label>
+                    <select id="corner-shape">
+                        <option value="square">Square</option>
+                        <option value="dot">Dot</option>
+                        <option value="custom">Custom Shape</option>
+                    </select>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="add-lines">
+                    <label for="add-lines">Add lines between modules</label>
+                </div>
+            </div>
+
+            <button class="accordion">Logo</button>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="logo-input">Logo</label>
+                    <input type="file" id="logo-input" accept="image/*">
+                </div>
+                <div class="form-group hidden" id="logo-size-group">
+                    <label for="logo-size">Logo Size (%)</label>
+                    <input type="number" id="logo-size" min="1" max="30" value="15">
+                </div>
+            </div>
+
+            <button class="accordion">Corner</button>
+            <div class="panel">
+                <div class="form-group">
+                    <label for="corner-frame-style">Corner Frame Style</label>
+                    <select id="corner-frame-style">
+                        <option value="none">None</option>
+                        <option value="circle">Circle</option>
+                        <option value="square">Square</option>
+                        <option value="rounded-square" selected>Rounded Square</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="corner-dot-type">Corner Dot Type</label>
+                    <select id="corner-dot-type">
+                        <option value="none">None</option>
+                        <option value="dot">Dot</option>
+                        <option value="square" selected>Square</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="corner-frame-color">Corner Frame Color</label>
+                    <input type="color" id="corner-frame-color" value="#000000">
+                </div>
+
+                <div class="form-group">
+                    <label for="corner-dot-color">Corner Dot Color</label>
+                    <input type="color" id="corner-dot-color" value="#000000">
+                </div>
+            </div>
+
+            <button onclick="generateQR()">Generate QR Code</button>
+        </div>
+        <div class="preview">
+            <div id="qrcode"></div>
+            <button onclick="downloadQR()">Download QR Code</button>
+            <select id="download-format">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="svg">SVG</option>
+            </select>
+        </div>
+    </div>
+    <div id="error-message" style="color: red; text-align: center; margin-top: 20px; display: none;"></div>
     <script>
+        let logoImage = null;
+
+        // Accordion functionality
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        }
+
+        // Show logo size option when logo is uploaded
+        document.getElementById('logo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoImage = e.target.result;
+                    document.getElementById('logo-size-group').classList.remove('hidden');
+                    generateQR();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                logoImage = null;
+                document.getElementById('logo-size-group').classList.add('hidden');
+            }
+        });
+
+        // Add event listeners to all inputs for real-time updates
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', generateQR);
+        });
+
         function generateQR() {
             const url = document.getElementById('url-input').value;
             if (url) {
                 const qr = qrcode(0, 'L');
                 qr.addData(url);
                 qr.make();
-                document.getElementById('qrcode').innerHTML = qr.createSvgTag(8, 0);
+                
+                const moduleCount = qr.getModuleCount();
+                const cellSize = 5;
+                const size = moduleCount * cellSize;
+                
+                const borderWidth = parseInt(document.getElementById('border-width').value);
+                const totalSize = size + (borderWidth * 2); // Increase canvas size to accommodate border
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = totalSize;
+                canvas.height = totalSize;
+                const ctx = canvas.getContext('2d');
+                
+                // Apply border first
+                if (borderWidth > 0) {
+                    applyBorder(ctx, totalSize, borderWidth);
+                }
+                
+                // Set background color
+                ctx.fillStyle = document.getElementById('background-color').value;
+                ctx.fillRect(borderWidth, borderWidth, size, size);
+                
+                // Set foreground color
+                ctx.fillStyle = document.getElementById('foreground-color').value;
+                
+                // Draw QR code
+                for (let row = 0; row < moduleCount; row++) {
+                    for (let col = 0; col < moduleCount; col++) {
+                        if (qr.isDark(row, col)) {
+                            const x = col * cellSize + borderWidth;
+                            const y = row * cellSize + borderWidth;
+                            drawModule(ctx, x, y, cellSize);
+                        }
+                    }
+                }
+                
+                // Add logo if present
+                if (logoImage) {
+                    addLogo(ctx, size, borderWidth);
+                }
+                
+                // Add lines between modules if checked
+                if (document.getElementById('add-lines').checked) {
+                    addLinesBetweenModules(ctx, moduleCount, cellSize, borderWidth);
+                }
+                
+                // Apply corner frame and dot
+                applyCornerFrameAndDot(ctx, moduleCount, cellSize, borderWidth);
+                
+                document.getElementById('qrcode').innerHTML = '';
+                document.getElementById('qrcode').appendChild(canvas);
             } else {
                 document.getElementById('qrcode').innerHTML = '';
             }
         }
 
-        function downloadQR() {
-            const svgElement = document.querySelector('#qrcode svg');
-            if (svgElement) {
-                const svgData = new XMLSerializer().serializeToString(svgElement);
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-                const img = new Image();
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    const pngFile = canvas.toDataURL("image/png");
-                    const downloadLink = document.createElement("a");
-                    downloadLink.download = "qrcode.png";
-                    downloadLink.href = pngFile;
-                    downloadLink.click();
-                };
-                img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        function drawModule(ctx, x, y, cellSize) {
+            const moduleShape = document.getElementById('module-shape').value;
+            switch (moduleShape) {
+                case 'dot':
+                    ctx.beginPath();
+                    ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize / 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                    break;
+                case 'rounded':
+                    ctx.beginPath();
+                    ctx.moveTo(x + cellSize / 4, y);
+                    ctx.lineTo(x + cellSize * 3 / 4, y);
+                    ctx.quadraticCurveTo(x + cellSize, y, x + cellSize, y + cellSize / 4);
+                    ctx.lineTo(x + cellSize, y + cellSize * 3 / 4);
+                    ctx.quadraticCurveTo(x + cellSize, y + cellSize, x + cellSize * 3 / 4, y + cellSize);
+                    ctx.lineTo(x + cellSize / 4, y + cellSize);
+                    ctx.quadraticCurveTo(x, y + cellSize, x, y + cellSize * 3 / 4);
+                    ctx.lineTo(x, y + cellSize / 4);
+                    ctx.quadraticCurveTo(x, y, x + cellSize / 4, y);
+                    ctx.fill();
+                    break;
+                default:
+                    ctx.fillRect(x, y, cellSize, cellSize);
             }
         }
 
-        document.getElementById('url-input').addEventListener('input', generateQR);
+        function addLogo(ctx, size, borderWidth) {
+            const logoSize = parseInt(document.getElementById('logo-size').value) / 100;
+            const logoImg = new Image();
+            logoImg.onload = function() {
+                const logoWidth = size * logoSize;
+                const logoHeight = logoWidth * (logoImg.height / logoImg.width);
+                const logoX = (size - logoWidth) / 2 + borderWidth;
+                const logoY = (size - logoHeight) / 2 + borderWidth;
+                ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+            };
+            logoImg.src = logoImage;
+        }
+
+        function addLinesBetweenModules(ctx, moduleCount, cellSize, borderWidth) {
+            ctx.strokeStyle = document.getElementById('background-color').value;
+            ctx.lineWidth = 1;
+            for (let i = 1; i < moduleCount; i++) {
+                const pos = i * cellSize + borderWidth;
+                ctx.beginPath();
+                ctx.moveTo(pos, borderWidth);
+                ctx.lineTo(pos, moduleCount * cellSize + borderWidth);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(borderWidth, pos);
+                ctx.lineTo(moduleCount * cellSize + borderWidth, pos);
+                ctx.stroke();
+            }
+        }
+
+        function applyCornerFrameAndDot(ctx, moduleCount, cellSize, borderWidth) {
+            const frameStyle = document.getElementById('corner-frame-style').value;
+            const dotType = document.getElementById('corner-dot-type').value;
+            const frameColor = document.getElementById('corner-frame-color').value;
+            const dotColor = document.getElementById('corner-dot-color').value;
+            const cornerSize = 7 * cellSize;
+
+            ctx.fillStyle = frameColor;
+            ctx.strokeStyle = frameColor;
+
+            // Clear the corner areas first
+            ctx.fillStyle = document.getElementById('background-color').value;
+            ctx.fillRect(borderWidth, borderWidth, cornerSize, cornerSize);
+            ctx.fillRect(moduleCount * cellSize - cornerSize + borderWidth, borderWidth, cornerSize, cornerSize);
+            ctx.fillRect(borderWidth, moduleCount * cellSize - cornerSize + borderWidth, cornerSize, cornerSize);
+
+            // Draw corner frames
+            if (frameStyle !== 'none') {
+                ctx.fillStyle = frameColor;
+                ctx.strokeStyle = frameColor;
+                drawCornerFrame(ctx, borderWidth, borderWidth, cornerSize, frameStyle);
+                drawCornerFrame(ctx, moduleCount * cellSize - cornerSize + borderWidth, borderWidth, cornerSize, frameStyle);
+                drawCornerFrame(ctx, borderWidth, moduleCount * cellSize - cornerSize + borderWidth, cornerSize, frameStyle);
+            }
+
+            // Draw corner dots
+            if (dotType !== 'none') {
+                ctx.fillStyle = dotColor;
+                drawCornerDot(ctx, 3 * cellSize + borderWidth, 3 * cellSize + borderWidth, cellSize, dotType);
+                drawCornerDot(ctx, (moduleCount - 4) * cellSize + borderWidth, 3 * cellSize + borderWidth, cellSize, dotType);
+                drawCornerDot(ctx, 3 * cellSize + borderWidth, (moduleCount - 4) * cellSize + borderWidth, cellSize, dotType);
+            }
+
+            // Redraw the QR code patterns in the corners
+            ctx.fillStyle = document.getElementById('foreground-color').value;
+            drawCornerPattern(ctx, borderWidth, borderWidth, cellSize);
+            drawCornerPattern(ctx, moduleCount * cellSize - 7 * cellSize + borderWidth, borderWidth, cellSize);
+            drawCornerPattern(ctx, borderWidth, moduleCount * cellSize - 7 * cellSize + borderWidth, cellSize);
+        }
+
+        function drawCornerFrame(ctx, x, y, size, style) {
+            switch (style) {
+                case 'circle':
+                    ctx.beginPath();
+                    ctx.arc(x + size / 2, y + size / 2, size / 2, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    break;
+                case 'square':
+                    ctx.strokeRect(x, y, size, size);
+                    break;
+                case 'rounded-square':
+                    ctx.beginPath();
+                    ctx.moveTo(x + size / 4, y);
+                    ctx.lineTo(x + size * 3 / 4, y);
+                    ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
+                    ctx.lineTo(x + size, y + size * 3 / 4);
+                    ctx.quadraticCurveTo(x + size, y + size, x + size * 3 / 4, y + size);
+                    ctx.lineTo(x + size / 4, y + size);
+                    ctx.quadraticCurveTo(x, y + size, x, y + size * 3 / 4);
+                    ctx.lineTo(x, y + size / 4);
+                    ctx.quadraticCurveTo(x, y, x + size / 4, y);
+                    ctx.stroke();
+                    break;
+            }
+        }
+
+        function drawCornerDot(ctx, x, y, size, type) {
+            switch (type) {
+                case 'dot':
+                    ctx.beginPath();
+                    ctx.arc(x + size / 2, y + size / 2, size / 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                    break;
+                case 'square':
+                    ctx.fillRect(x, y, size, size);
+                    break;
+            }
+        }
+
+        function drawCornerPattern(ctx, x, y, cellSize) {
+            for (let i = 0; i < 7; i++) {
+                for (let j = 0; j < 7; j++) {
+                    if ((i === 0 || i === 6 || j === 0 || j === 6) || (i > 1 && i < 5 && j > 1 && j < 5)) {
+                        ctx.fillRect(x + i * cellSize, y + j * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+        }
+
+        function applyBorder(ctx, totalSize, borderWidth) {
+            ctx.fillStyle = document.getElementById('border-color').value;
+            ctx.fillRect(0, 0, totalSize, totalSize);
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (canvas) {
+                const format = document.getElementById('download-format').value;
+                const dataURL = canvas.toDataURL(`image/${format}`);
+                const link = document.createElement('a');
+                link.download = `qrcode.${format}`;
+                link.href = dataURL;
+                link.click();
+            }
+        }
+
+        // Add event listeners for the new options
+        document.getElementById('corner-frame-style').addEventListener('change', generateQR);
+        document.getElementById('corner-dot-type').addEventListener('change', generateQR);
+        document.getElementById('corner-frame-color').addEventListener('input', generateQR);
+        document.getElementById('corner-dot-color').addEventListener('input', generateQR);
     </script>
 </body>
 </html>
